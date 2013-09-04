@@ -1,0 +1,15 @@
+div(id='addModal1', class='modal hide fade', tabindex='-1', role='dialog', aria-labelledby='addModal1Label', aria-hidden='true')
+  div.modal-header
+    button.close(type='button', data-dismiss="modal", aria-hidden="true")
+    h3.addModalLabel Add Bookmark
+  div.modal-body
+    div(class='alert alert-error')
+    form.form-horizontal(method='post', action='/api/v1/link/add', id='formadd1')
+      // .control-group
+      // label.control-label(for='url') URL:
+      // .controls
+      input(type='text', id='formadd1url', name='url', placeholder='http://', class='input-xlarge')
+  div.modal-footer
+    button.btn(data-dismiss='modal', aria-hidden='true', id='formadd1close') Cancel
+    button(class='btn btn-primary', id='formadd1add') Add
+

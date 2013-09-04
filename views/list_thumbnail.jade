@@ -1,0 +1,43 @@
+extends layout
+
+block content
+  - var now = new Date().getTime()/1000;
+  .span3
+    - for (var i=0; i <links.length; i+=4)
+      +link(links[i])
+  .span3
+    - for (var i=1; i <links.length; i+=4)
+      +link(links[i])
+  .span3
+    - for (var i=2; i <links.length; i+=4)
+      +link(links[i])
+  .span3
+    - for (var i=3; i <links.length; i+=4)
+      +link(links[i])
+
+mixin link(link)
+  .link.view-thumbnail(id=link.id)
+    .img-polaroid
+      a(class='main', href=link.value.url)
+        if link.value._attachments && link.value._attachments.image
+          img(src='/api/v1/image/get?id='+link.id, alt=link.value.description)
+        else
+          img(src='/img/noimage.jpg', alt=link.value.description)
+    if (authenticated)
+      i(class='icon-pencil edit')
+    .title
+      a(href=link.value.url) #{link.value.title}
+    if (link.value.private)
+      i(class='icon-lock')
+//    if (link.value.tags)
+//      .tags
+//        - each tag in link.value.tags
+//          span.badge.tag
+//            a(href='/user/'+user+'/'+tag)
+//              i.icon-tags
+//              != tag
+
+
+block left-bar
+  include view
+  +taglist()

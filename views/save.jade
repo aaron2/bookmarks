@@ -1,0 +1,27 @@
+doctype html
+html
+  head
+    include scripts
+  body.bookmarklet
+    script(src='js/bookmarklet.js')
+    if (authenticated)
+      include addModal2
+    else
+      div(id='loginModal', class='modal hide fade', tabindex='-1', role='dialog', aria-labelledby='addModalLabel', aria-hidden='true')
+        div.modal-header
+          button.close(type='button', data-dismiss="modal", aria-hidden="true") x
+          h3.editModalLabel Login
+        div.modal-body
+          form(method="post", action="/login")
+            .control-group
+              label.control-label(for='username') Username
+              .controls
+                input(type='text', id='username', name='username', class='input-xlarge')
+            .control-group
+              label.control-label(for='password') Password
+              .controls
+                input(type='password', id='password', name='password', class='input-xlarge')
+            input(type="hidden",name="next",value=next)
+        div.modal-footer
+          a.btn(data-dismiss='modal', href='#') Cancel
+          a(href='#', class='btn btn-primary') Login

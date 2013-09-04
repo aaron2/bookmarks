@@ -1,0 +1,48 @@
+<a href="
+javascript:(function (win,t){
+  var doc = win.document;
+  setTimeout(function() {
+    function remove(e) {
+alert(e);
+      if (e.data === 'destroy_bookmarklet') {
+        var id = doc.getElementById(name);
+        if (id) {
+          doc.body.removeChild(id);
+          id = null;
+        }
+      }
+    }
+
+    var name = 'DELI_bookmarklet_iframe';
+    var id = doc.getElementById(name);
+    if (id) {return;}
+
+
+    var iframe = doc.createElement('iframe');
+    iframe.id = name;
+    iframe.src = 'http://192.168.1.101:8124/save?'
+      +'url='+encodeURIComponent(win.location.href)
+      +'&title='+encodeURIComponent(doc.title)
+      +'&description='+encodeURIComponent(''+(win.getSelection ? win.getSelection() : doc.getSelection ? doc.getSelection() : doc.selection.createRange().text));
+    iframe.style.position   = 'fixed';
+    iframe.style.top        = '0';
+    iframe.style.left       = '0';
+    iframe.style.height     = '100%';
+    iframe.style.width      = '100%';
+    iframe.style.zIndex     = '16777270';
+    iframe.style.border     = 'none';
+    iframe.style.visibility = 'hidden';
+    iframe.style.opacity    = '0.5';
+
+    iframe.onload = function() {
+      this.style.visibility='visible';
+    };
+
+    doc.body.appendChild(iframe);
+    var listener = (win.addEventListener) ? 'addEventListener' : 'attachEvent';
+    var event = (listener == 'attachEvent') ? 'onmessage' : 'message';
+    win[listener](event,remove,false);
+  },1);
+})(window)
+">Add Bookmark</a>
+

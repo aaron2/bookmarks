@@ -1,0 +1,16 @@
+div.settings-view
+  if layout == 'compact'
+    i.selected(class='icon-align-justify', name='compact')
+  else
+    i(class='icon-align-justify', name='compact')
+
+  if layout == 'full'
+    i.selected(class='icon-th-list', name='full')
+  else
+    i(class='icon-th-list', name='full')
+
+  if layout == 'thumbnail'
+    i.selected(class='icon-th', name='thumbnail')
+  else
+    i(class='icon-th', name='thumbnail')
+

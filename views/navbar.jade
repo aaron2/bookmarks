@@ -1,0 +1,51 @@
+- if (typeof(search) == 'undefined') search = ''
+div(class='navbar navbar-fixed-top')
+  .navbar-inner
+    span.brand Delish
+    form(class='navbar-search pull-left', method='get', action='/search')
+      input(type='text', class='search-query', name='q', placeholder='Search', value=search.query)
+    ul.nav
+      li.dropdown
+        if typeof(authenticated) != 'undefined' && authenticated
+          a(class='dropdown-toggle', data-toggle='dropdown')
+            | Search your bookmarks 
+            span.caret
+          ul.dropdown-menu
+            li Search all bookmarks
+            li Search yours excluding full text
+            li Search all excluding full text
+        else
+          a(class='dropdown-toggle', data-toggle='dropdown')
+            | Search all bookmarks
+            span.caret
+          ul.dropdown-menu
+            li Search excluding full text
+  
+      if typeof(authenticated) != 'undefined' && authenticated
+        a(href='#addModal1', role='button', class='btn btn-primary', data-toggle='modal')
+          i.icon-plus
+          |    Add Link
+
+    ul(class='nav pull-right')
+      if typeof(authenticated) != 'undefined' && authenticated
+        li(class='dropdown dropdown-split-left pull-right')
+          a(href='/user/'+authenticated) #{authenticated} 
+        li(class='dropdown dropdown-split-right')
+          a(href='#', class='dropdown-toggle', data-toggle='dropdown')
+            span.caret
+          ul.dropdown-menu
+            li: a(href='/account') Edit your account
+            li: a(href='#', id='logout') Logout
+      else
+        li(class='dropdown pull-right')
+          a(class='dropdown-toggle', data-toggle='dropdown', href='#', role='button') Login 
+            b.caret
+          ul.dropdown-menu(role='menu')
+            li
+              form(id='login', action='/login', method='post')
+                fieldset
+                  label Username
+                  input(type='text', name='username')
+                fieldset
+                  label Password
+                  input(type='password', name='password')

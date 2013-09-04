@@ -1,0 +1,19 @@
+html
+  head
+    title add post
+    link(rel: "stylesheet", href: "style.css")
+  body
+    form(action: '/add', method: 'post')
+      fieldset
+        label(for: 'url') url
+        input(name: 'url')
+        label(for: 'name') title
+        input(name: 'name') #{locals.q.name}
+        label(for: 'tags') tags
+        input(name: 'tags')
+        label(for: 'note') note
+        input(name: 'note', type: 'textarea')
+        input(type: 'submit', name: 'save')
+        label(for: 'private') private
+        input(type: 'checkbox', name: 'private')
+

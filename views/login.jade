@@ -1,0 +1,11 @@
+h1 Login
+form(method="post", action="/login")
+  p
+    label Username:
+    input(type="text", name="username")
+  p
+    label Password:
+    input(type="text", name="password")
+  p
+    input(type="submit",value="Login")
+  input(type="hidden",name="next",value=next)

@@ -1,0 +1,43 @@
+mixin taglist
+  if search
+    | #{search.results} results
+  .taglist
+    - each t in tags
+      != t[1]
+      span.badge.tag
+        a(href='/user/'+user+'/'+t[0])
+          i.icon-tags
+          != t[0]
+      if ((search && search.query.indexOf('tag:'+t[0]) >= 0) || t[0] == tag)
+        if search
+          a(href='/search?q='+search.query.replace(' AND tag:'+t[0], ''))
+            i.icon-remove
+        else
+          a(href='/user/'+user)
+            i.icon-remove
+      else if search
+        a(href='/search?q=('+search.query+') AND tag:'+t[0])
+          if search.query.indexOf('tag:'+t[0]) < 0
+            i.icon-plus-sign-alt
+      else if user && tag
+        a(href='/search?q=user:'+user+' AND tag:'+tag+' AND tag:'+t[0])
+          i.icon-plus-sign-alt
+      br
+
+doctype html
+html
+  head
+    title #{title}
+    include scripts
+  body(tag=tag, user=user, view=layout, auth=authenticated)
+    include navbar
+    .row-fluid
+      .span2
+        block left-bar
+      .span10
+        block content
+    include addModal1
+    include addModal2
+    include editModal
+
+

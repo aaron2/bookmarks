@@ -1,0 +1,9 @@
+- each post in locals.r
+  .post
+    - var d = new Date(post.value.saved * 1000).toLocaleDateString();
+    .date #{d}
+    a(href: post.value.url) #{post.value.name}
+    .edit
+      a edit
+      a delete
+      a share

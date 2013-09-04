@@ -1,0 +1,38 @@
+div(id='addModal2', class='modal hide fade', tabindex='-1', role='dialog', aria-labelledby='addModal2Label', aria-hidden='true', data-backdrop='static')
+  div.modal-header
+    button.close(type='button', data-dismiss="modal", aria-hidden="true")
+    h3.addModal2Label Add Bookmark
+  div.modal-body
+    form(method='post', action='/api/v1/link/edit', delete='/api/v1/link/delete/', id='formadd2')
+      .row-fluid
+        .span5
+          div(id='myCarousel', class='carousel slide', data-interval='false')
+            .carousel-inner
+            a(class='carousel-control left', href='#myCarousel', data-slide='prev') &lsaquo;
+            a(class='carousel-control right', href='#myCarousel', data-slide='next') &rsaquo;
+          input(type='text', id='formadd2imgurl', placeholder='add image... http://')
+          .control-group
+            #label.control-label(for='formadd2noimg') No image
+            input(type='checkbox', id='formadd2noimg')
+        .span7
+          input(type='hidden', name='id', id='formadd2id', value='')
+          .control-group
+            label.control-label(for='title') Title
+            .controls
+              input(type='text', id='formadd2title', name='title', class='input-xlarge')
+          .control-group
+            label.control-label(for='description') Description
+            .controls
+              textarea(row=2, id='formadd2description', name='description', class='input-xlarge')
+           .control-group
+             label.control-label(for='private') Private
+             input(type='checkbox', id='formadd2private', name='private')
+             i.icon-lock
+           .control-group
+             // label.control-label(for='formadd2taginput') Tags 
+             .controls
+               #addModal2tags
+               input(type='text', id='taginput', class='tagsinput input-xlarge', placeholder='add tags', tags-container='addModal2tags')
+  div.modal-footer
+    button.btn(data-dismiss='modal', aria-hidden='true', id='formadd2cancel') Cancel
+    button(class='btn btn-primary', id='formadd2save') Save

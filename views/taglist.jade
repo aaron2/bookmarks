@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  - var now = new Date().getTime()/1000;
+  - each link in links
+    .link(id=link.id)
+      h4
+        a(class='main', href=link.value.url)
+          != link.value.title
+      if (authenticated || 1)
+        i(class='icon-pencil edit')
+      span.domain
+        != link.value.url_parsed.domain
+      span.saveddate(alt=new Date(link.value.saved*1000).toString())
+        != duration(now-link.value.saved)
+      if (link.value.private)
+        i(class='icon-lock')
+      if (link.value.tags)
+        span.tags
+          - each tag in link.value.tags
+            span.badge
+              a(href='/tag/'+tag)
+                i.icon-tags
+                != tag

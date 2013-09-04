@@ -1,0 +1,4 @@
+#!/bin/sh
+export PATH=$PATH:/home/rox/code/js/bookmarks/fuck/jdk1.7.0_21/bin
+cd /home/rox/code/js/bookmarks/fuck/couchdb-lucene/target/couchdb-lucene-0.10.0-SNAPSHOT
+sh bin/run &

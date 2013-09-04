@@ -1,0 +1,13 @@
+- each tag in tags.slice(0, count)
+  != tag[1]
+  span.badge.tag
+    if user && tag
+      a(href='/user/'+user+'/'+tag[0])
+        i.icon-tags
+        != tag[0]
+    else
+      a(href='/search?q=('+search+') AND tag:'+tag[0])
+        i.icon-tags
+        != tag[0]
+  br
+

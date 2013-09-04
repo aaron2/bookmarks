@@ -1,0 +1,40 @@
+div(id='editModal', class='modal hide fade', tabindex='-1', role='dialog', aria-labelledby='addModalLabel', aria-hidden='true', data-backdrop='static')
+  div.modal-header
+    button.close(type='button', data-dismiss="modal", aria-hidden="true")
+    h3.editModalLabel Edit Bookmark
+  div.modal-body
+    form(method='post', action='/api/v1/link/edit', id='formedit')
+      .row-fluid
+        .span5
+          img(id='formeditimage', class='img-polaroid')
+          input(type='text', id='formeditimgurl', placeholder='change image... http://')
+          .control-group
+            #label.control-label(for='formeditnoimg') Remove image
+            input(type='checkbox', id='formeditnoimg')
+        .span7
+          input(type='hidden', name='id', id='formeditid', value='')
+          .control-group
+            label.control-label(for='title') Title
+            .controls
+              input(type='text', id='formedittitle', name='title', class='input-xlarge')
+          .control-group
+            label.control-label(for='title') URL
+            .controls
+              input(type='text', id='formediturl', name='url', class='input-xlarge')
+          .control-group
+            label.control-label(for='description') Description
+            .controls
+              textarea(row=2, id='formeditdescription', name='description', class='input-xlarge')
+           .control-group
+             label.control-label(for='private') Private
+             input(type='checkbox', id='formeditprivate', name='private')
+             i.icon-lock
+           .control-group
+             // label.control-label(for='taginput') Tags 
+             .controls
+               #editModaltags
+               input(type='text', id='formedittaginput', class='tagsinput input-xlarge', placeholder='add tags', tags-container='editModaltags')
+  div.modal-footer
+    a(id='formeditdelete', href='/api/v1/link/delete') Delete
+    button.btn(data-dismiss='modal', aria-hidden='true', id='formeditcancel') Cancel
+    button(class='btn btn-primary', id='formeditsave') Save

@@ -1,0 +1,11 @@
+docid: { hash of user+normalized docid
+  url: normalized url
+  title: string
+  user: username
+  saved: epoch time 
+  privacy: 'public' or empty string
+  description: string
+  image: name of image on filesystem
+  tags: array, lower case, no spaces
+  content: 
+}
