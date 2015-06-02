@@ -129,7 +129,7 @@ exports.edit = function(req, res) {
   }
 
   getOpts = {}
-  if (req.body.url) getOpts.attachements = true;
+  if (req.body.url) getOpts.attachments = true;
 
   global.db.bookmarks.get(req.body.id, getOpts, function(err, doc) {
     if (!doc) {
@@ -216,9 +216,9 @@ not needed with requests module?
       data += chunk;
     });
     res.on('end', function (chunk) {
+      clearTimeout(timer);
       callback(attach(doc, 'image',  res.headers['content-type'], 'binary', data));
     });
-    setTimeout(function() { callback(doc) }, 2000);
   });
   try {
     req.end();
@@ -260,7 +260,7 @@ exports.get = function(req, res) {
 
   if (req.query.id) {
     global.db.bookmarks.get(req.query.id, getOpts, function(err, doc) {
-      if (global.auth.authorize(req.query.id, req.session.user)) {
+      if (global.auth.owned(req.query.id, req.session.user)) {
         if (doc) {
           res.sendStatus(200, { status: 'ok', link: doc });
         } else {
