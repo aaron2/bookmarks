@@ -12,7 +12,7 @@ var express = require('express')
 ConnectCouchDB = require('connect-couchdb')(require('connect'));
 
 var cradle = require('cradle').setup({
-  host: '192.168.1.101',
+  host: 'localhost',
   auth: {
     username: 'admin',
     password: 'admin',
@@ -30,20 +30,32 @@ global = {
 }
 
 var app = express();
+//var router = express.Router();
+//app.use('/bookmarks', router);
+  var morgan = require('morgan')
+  var methodoverride = require('method-override');
+  var cookieparser = require('cookie-parser');
+  var session = require('express-session');
+  var bodyparser = require('body-parser')
 
-app.configure(function(){
   app.set('port', process.env.PORT || 8124);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   //app.set('view options', { layout: false });
-  app.use(express.favicon());
-  app.use(express.logger('dev'));
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.cookieParser('your secret here'));
-  app.use(express.session({
+//var favicon = require('serve-favicon');
+//  app.use(favicon(__dirname));
+  app.use(morgan('combined'))
+  app.use(bodyparser.json({
+    extended: true,
+  }));
+  app.use(methodoverride());
+  app.use(cookieparser('your secret here'));
+  app.use(session({
+    secret: 'your secret here',
+    resave: false,
+    saveUninitialized: false,
     store: new ConnectCouchDB({
-      host: '192.168.1.101',
+      host: 'localhost',
       name: 'sessions',
       username: 'admin',
       password: 'admin',
@@ -51,12 +63,12 @@ app.configure(function(){
   }));
   //app.use(require('less-middleware')({ src: __dirname + '/public' }));
   app.use(express.static(path.join(__dirname, '/include')));
-  app.use(app.router);
-});
+  //app.use(app.router);
 
-app.configure('development', function(){
-  app.use(express.errorHandler());
-});
+//app.configure('development', function(){
+var errorhandler = require('errorhandler')
+  app.use(errorhandler());
+//});
 
 app.post('/login', function(req, res){
   global.auth.authenticate(req.body.username, req.body.password, function(err, user){
@@ -71,12 +83,12 @@ app.post('/login', function(req, res){
         if (req.body.next) {
           res.redirect(req.body.next);
         } else {
-          res.redirect('/');
+          res.redirect('/bookmarks');
         }
       });
     } else {
       req.session.error = 'Authentication failed, please check your username and password.';
-      res.redirect('/login');
+      res.redirect('/bookmarks/login');
     }
   });
 });
@@ -85,7 +97,7 @@ app.post('/logout', function(req, res){
   if (req.body.next) {
     res.redirect(req.body.next);
   } else {
-    res.redirect('/');
+    res.redirect('/bookmarks');
   }
 });
 
