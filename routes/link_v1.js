@@ -4,53 +4,62 @@ function normalize(url, user) {
   return global.base64.encode(new Buffer(user+'+'+uri.normalize()));
 }
 
+function url_parsed(uri) {
+  return {
+    protocol: uri.protocol(),
+    domain: uri.domain(),
+    subdomain: uri.subdomain(),
+    path: uri.segment(),
+    query: uri.query(),
+    fragment: uri.fragment(),
+  }
+}
+
+function Link(user, url, data) {
+  var uri = new global.uri(url.trim());
+  var link = {};
+  for (var x in data) {
+    link[x] = data[x];
+  }
+  delete(link._rev);
+  link._id = global.base64.encode(new Buffer(user+'+'+uri.normalize()));
+  link.url = uri.normalize().toString();
+  link.type = (uri.suffix()) ? uri.suffix() : 'html';
+  link.url_parsed = url_parsed(uri);
+  return link;
+}
+
 exports.add = function(req, res) {
   if (!req.body.url) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
     return;
   }
-  req.body.url = req.body.url.trim();
-  var uri = new global.uri(req.body.url);
-  var id = global.base64.encode(new Buffer(req.session.user+'+'+uri.normalize()));
   var now = parseInt(new Date().getTime() / 1000);
-  var link = {
-    _id: id,
+  var link = new Link(req.session.user, req.body.url, {
     user: req.session.user,
     saved: now,
-    url: uri.normalize().toString(),
-    type: (uri.suffix()) ? uri.suffix() : 'html',
     status: [ 'ok', now ],
-    url_parsed: {
-      protocol: uri.protocol(),
-      domain: uri.domain(),
-      subdomain: uri.subdomain(),
-      path: uri.segment(),
-      query: uri.query(),
-      fragment: uri.fragment(),
-    }
-  }
-  link.originalUrl = link.url;
+  })
   if (req.body.private) link.private = true;
   if (req.body.tags) link.tags = req.body.tags;
-  global.db.bookmarks.get(id, function(err, doc) {
+  global.db.bookmarks.get(link._id, function(err, doc) {
     if (doc) {
-      console.log(id);
-      res.send(409, { status: 'error', error: 'conflict' });
+      console.log('id:', link._id);
+      res.sendStatus(409, { status: 'error', error: 'conflict' });
       return;
     }
     if (!req.body.parse) {
       if (!req.body.title) {
-        res.send(400, { status: 'error', error: 'missing required parameter' });
+        res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
         return;
       }
       link.title = req.body.title;
       link.description = req.body.description;
-      link.text = req.body.text;
-      if (req.body.html) link = attach(link, 'html', 'text/html', 'ascii', req.body.html);
+      if (req.body.content) link = attach(link, 'content', 'text/html', 'ascii', req.body.html);
       fetchImage(req.body.image, link, function(doc) {
-        global.db.bookmarks.save(id, doc, function(err, save) {
-          console.log(err);
-          res.send(201, { status: 'ok', link: stub(doc) });
+        global.db.bookmarks.save(doc._id, doc, function(err, save) {
+          console.log('err1', err);
+          res.sendStatus(201, { status: 'ok', link: stub(link) });
         });
       });
     } else {
@@ -58,17 +67,19 @@ exports.add = function(req, res) {
       parser.parse(link.url, function(err, parsed) {
         if (err) {
           console.log('parse error: '+err);
-          res.send(400, { status: 'error', error: err });
+          res.sendStatus(400, { status: 'error', error: err });
           return;
         }
-        link.title = parsed.title;
+        link.title = (req.body.title) ? req.body.title : parsed.title;
+        link.description = (req.body.description) ? req.body.description : parsed.description;
         link.type = parsed.type;
-        link.description = parsed.description;
-        link.text = parsed.text;
+        link = attach(link, 'text', 'text/plain', 'utf-8', parsed.text);
         if (parsed.content && parsed.type != 'image') link = attach(link, 'content', parsed['content-type'], parsed.encoding, parsed.content);
-        global.db.bookmarks.save(id, link, function(err, save) {
-          console.log(err);
-          res.send(201, { status: 'ok', link: stub(link), images: parsed.images });
+        fetchImage(req.body.image, link, function(doc) {
+          global.db.bookmarks.save(link._id, link, function(err, save) {
+            if (err) console.log(err);
+            res.sendStatus(201, { status: 'ok', link: stub(link), images: parsed.images });
+          });
         });
       });
     }
@@ -77,17 +88,17 @@ exports.add = function(req, res) {
 
 exports.replace = function(req, res) {
   if (!req.body.id || !req.body.link || !req.body.link.url) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
     return;
   }
-  if (!global.auth.authorize(req.body.id, req.session.user)) {
-    res.send(403);
+  if (!global.auth.owned(req.body.id, req.session.user)) {
+    res.sendStatus(403);
     return;
   }
 
   global.db.bookmarks.get(req.body.id, function(err, doc) {
     if (!doc) {
-      res.send(404);
+      res.sendStatus(404);
       return;
     }
     delete(req.body.link._rev);
@@ -96,12 +107,12 @@ exports.replace = function(req, res) {
     if (id != req.body.id) {
       global.db.bookmarks.save(id, req.body.link, function(err, save) {
         global.db.bookmarks.remove(req.body.id, doc._rev, function(err, del) {
-          res.send(200, { status: 'ok', link: stub(req.body.link) });
+          res.sendStatus(200, { status: 'ok', link: stub(req.body.link) });
         });
       });
     } else {
       global.db.bookmarks.save(id, doc._rev, req.body.link, function(err, save) {
-        res.send(200, { status: 'ok', link: stub(req.body.link) });
+        res.sendStatus(200, { status: 'ok', link: stub(req.body.link) });
       });
     }
   });
@@ -109,11 +120,11 @@ exports.replace = function(req, res) {
 
 exports.edit = function(req, res) {
   if (!req.body.id) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
     return;
   }
-  if (!global.auth.authorize(req.body.id, req.session.user)) {
-    res.send(403);
+  if (!global.auth.owned(req.body.id, req.session.user)) {
+    res.sendStatus(403);
     return;
   }
 
@@ -122,7 +133,7 @@ exports.edit = function(req, res) {
 
   global.db.bookmarks.get(req.body.id, getOpts, function(err, doc) {
     if (!doc) {
-      res.send(404);
+      res.sendStatus(404);
       return;
     }
     for (var a = ['title', 'description', 'tags', 'private'], i = 0; i < a.length; i++) {
@@ -130,23 +141,28 @@ exports.edit = function(req, res) {
         doc[a[i]] = req.body[a[i]];
       }
     }
-    doc.modified = parseInt(new Date().getTime() / 1000);
+    var now = parseInt(new Date().getTime() / 1000);
+    doc.modified = now;
     if (req.body.url && req.body.url != doc.url) {
-      var newdoc = doc;
-      delete newdoc._rev;
-      delete newdoc._id;
-      newdoc.url = normalize(req.body.url);
-      var newid = normalize(newdoc.url, req.session.user);
-
-      global.db.bookmarks.save(newid, newdoc, function(err, save) {
-        global.db.bookmarks.remove(req.body.id, doc._rev, function(err, del) {
-          res.send(200, { status: 'ok', link: stub(newdoc) });
+      doc.status = [ 'ok', now ];
+      if (!doc.originalUrl) doc.originalUrl = doc.url;
+      var newdoc = new Link(req.session.user, req.body.url, doc);
+      fetchImage(req.body.image, newdoc, function(newdoc) {
+        global.db.bookmarks.save(newdoc._id, newdoc, function(err, save) {
+          if (err) { res.send(500); return; }
+          global.db.bookmarks.remove(req.body.id, doc._rev, function(err, del) {
+            res.send(200, { status: 'ok', link: stub(newdoc) });
+          });
         });
       });
     } else {
       fetchImage(req.body.image, doc, function(doc) {
         global.db.bookmarks.save(req.body.id, doc._rev, doc, function(err, save) {
-          res.send(200, { status: 'ok', link: doc });
+if (res.headersSent) {
+console.log('asshole');
+return;
+}
+          res.sendStatus(200, { status: 'ok', link: stub(doc) });
         });
       });
     }
@@ -162,7 +178,7 @@ function stub(doc) {
 }
 
 function attach(doc, name, contentType, encoding, data) {
-console.log('attach', doc, name);
+//console.log('attach', doc, name);
   if (!doc._attachments) doc._attachments = {};
   doc._attachments[name] = {
     data: new Buffer(data, encoding).toString('base64'),
@@ -174,16 +190,26 @@ console.log('attach', doc, name);
 function fetchImage(url, doc, callback) {
   if (!url) return callback(doc);
 
-  var http = require('http');
-  var req = http.request(url);
+  var request = require('request');
+  var req = request.get(url);
   req.on('error', function(e) {
     console.log('problem with request: ' + e.message);
     return callback(doc)
   });
   data = ''
   req.on('response', function (res) {
+    var timer = setTimeout(function() { console.log('fuck'); callback(doc) }, 2000);
     res.setEncoding('binary');
     if (res.statusCode != 200) {
+    /*
+not needed with requests module?
+      if (res.statusCode == '301' || res.statusCode == '302') {
+        clearTimeout(timer);
+        fetchImage(res.headers.location, doc, callback);
+        return;
+      }
+      clearTimeout(timer);
+*/
       return callback(doc);
     }
     res.on('data', function (chunk) {
@@ -198,31 +224,31 @@ function fetchImage(url, doc, callback) {
     req.end();
   }
   catch(err) {
-    console.log(err);
+    console.log('err3', err);
     return callback(doc);
   }
 }
 
 exports.delete = function(req, res){
   if (!req.body.id) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
     return;
   }
-  if (!global.auth.authorize(req.body.id, req.session.user)) {
-    res.send(403);
+  if (!global.auth.owned(req.body.id, req.session.user)) {
+    res.sendStatus(403);
     return;
   }
 
   global.db.bookmarks.get(req.body.id, function(err, doc) {
     if (!doc) {
-      res.send(404);
+      res.sendStatus(404);
       return;
     }
     global.db.bookmarks.remove(doc._id, doc._rev, function(err, del) {
       if (err) {
-        rese.send(200, { status: 'error', error: err });
+        rese.sendStatus(200, { status: 'error', error: err });
       } else {
-        res.send(200, { status: 'ok', link: { _id: doc._id } });
+        res.sendStatus(200, { status: 'ok', link: { _id: doc._id } });
       }
     });
   });
@@ -236,30 +262,29 @@ exports.get = function(req, res) {
     global.db.bookmarks.get(req.query.id, getOpts, function(err, doc) {
       if (global.auth.authorize(req.query.id, req.session.user)) {
         if (doc) {
-          res.send(200, { status: 'ok', link: doc });
+          res.sendStatus(200, { status: 'ok', link: doc });
         } else {
-          res.send(404);
+          res.sendStatus(404);
         }
         return;
       }
       if (!doc || (doc && doc.private == true)) {
-        res.send(403);
+        res.sendStatus(403);
         return;
       }
-      res.send(200, { status: 'ok', link: doc });
+      res.sendStatus(200, { status: 'ok', link: doc });
     });
   }
   else if (req.query.user) {
-    var view = 'user/public';
+    var view = (req.query.user == req.session.user) ? 'user/all' : 'user/public';
     getOpts.startkey = [ req.query.user ];
     getOpts.endkey = [ req.query.user, {} ];
-    if (req.query.user == req.session.user) view = 'user/all';
     global.db.bookmarks.view(view, getOpts, function(err, docs) {
-      res.send(200, { status: 'fuck', data: docs });
+      res.sendStatus(200, { status: 'ok', data: docs });
     });
   }
   else {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
   }
 }
 

@@ -1,5 +1,38 @@
 exports.index = function(req, res){
-  res.render('index', { title: 'Express' });
+  res.render('index', {
+      title: 'Delish',
+      tag: '',
+      layout: '',
+      user: req.session.user,
+      authenticated: (req.session.user),
+      carousel: true,
+      edit_url: true,
+      next: req.originalUrl,
+      images: req.query.img,
+  });
+};
+
+exports.searchautocomplete = function(req, res) {
+  var viewOpts = { group: true };
+  var view = undefined;
+  if (req.session.user) {
+    view = 'user/search_autocomplete_all';
+    viewOpts.endkey =  [ req.session.user, {} ];
+    viewOpts.startkey = [ req.session.user ];
+  } else {
+    view = 'user/search_autocomplete_all';
+  }
+  global.db.bookmarks.view(view, viewOpts, function(err, rows) {
+    if (typeof(rows[0].key) == 'string') {
+      res.send(rows);
+    } else {
+      var out = [];
+      for (r in rows) {
+        out.push({ key: rows[r].key[1], value: rows[r].value });
+      }
+      res.send(out);
+    }
+  });
 };
 
 exports.search = function(req, res) {
@@ -7,8 +40,13 @@ exports.search = function(req, res) {
   var m = [];
   search(req, function(results, err) {
     if (err) {
-      if (err == 'timeout') res.send(502);
-      res.send(500);
+      if (err == 'timeout') {
+        res.sendStatus(502);
+      } else {
+        res.sendStatus(500);
+      }
+      res.end()
+      return;
     }
     for (x in results.rows) {
       if (req.body.user && req.body.user != results.rows[x]['doc']['user']) continue;
@@ -74,7 +112,7 @@ function search(req, callback) {
 
   var index = (req.body.notext) ? 'notext' : 'all';
   var searchReq = http.request({
-    hostname: '192.168.1.101',
+    hostname: 'localhost',
     port: 5984,
     auth: 'admin:admin',
     path: '/bookmarks/_fti/_design/search/'+index+'?'+qs.stringify(query)
@@ -114,12 +152,27 @@ function search(req, callback) {
   }
 };
 
+function normalize(url, a) {
+  var out = {};
+  if (a === undefined) return [];
+  for (var i = 0; i<a.length; i++) {
+    var u = new global.uri(a[i]);
+    try {
+      out[u.absoluteTo(url).toString()] = 1;
+    }
+    catch(e) { }
+  }
+  return Object.keys(out);
+}
+
 exports.save = function(req, res) {
+  var imgs = (typeof(req.query.img) == 'string') ? [ req.query.img ] : req.query.img;
   res.render("save.jade", {
       user: req.session.user,
       authenticated: (req.session.user),
       carousel: true,
       edit_url: true,
       next: req.originalUrl,
+      images: normalize(req.query.url, imgs),
   });
 }

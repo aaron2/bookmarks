@@ -22,7 +22,11 @@ exports.list = function(req, res){
     viewOpts.startkey =  [ req.params.user, {} ];
     viewOpts.endkey = [ req.params.user ];
   }
-  layout = (req.session.settings && req.session.settings.view) || 'compact';
+  if (req.query.view) {
+    layout = req.query.view;
+  } else {
+    layout = (req.session.settings && req.session.settings.view) || 'compact';
+  }
   global.db.bookmarks.view(view, viewOpts, function (err, rows) {
 
     tagCount = {}
@@ -48,6 +52,7 @@ exports.list = function(req, res){
       user: req.params.user,
       tag: req.params.tag,
       authenticated: req.session.user,
+      settings: req.session.settings,
       func: global.common,
     });
   });
