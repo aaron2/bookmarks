@@ -1,3 +1,5 @@
+var path = '/bookmarks';
+
 function addtag(to, tag) {
   tag = $.trim(tag);
   var tags = []
@@ -11,19 +13,44 @@ function addtag(to, tag) {
   });
 }
 
+function tagFilter(q, data) {
+  var num = 5;
+  var out = [];
+  for (t in data) {
+    if (data[t].key.indexOf(q) == 0) {
+      out.push(data[t]);
+    }
+  }
+  if (out.lenght >= num) return out;
+  for (t in data.sort(tagSort)) {
+    if (data[t].key.indexOf(q) > 0) {
+      out.push(data[t]);
+    }
+  }
+  return out;
+}
+
+function tagSort(a, b) {
+  if (a.value > b.value) return -1;
+  if (a.value < b.value) return 1;
+  return 0
+}
+
 $(document).ready(function() {
   $('.tagsinput').keypress(function(e) {
     if (e.keyCode == 13) {
+        if ($(e.target).val().trim() == '') return;
         addtag('#'+$(e.target).attr('tags-container'), $(e.target).val());
         $(e.target).val('');
+        $('#taginput').typeahead('setQuery', '');
     }
   });
   $('.dropdown-menu').find('form').click(function(e) {
     e.stopPropagation();
   });
   $('.navbar #logout').click(function(e) {
-    $.post('/logout');
-    document.location = '/';
+    $.post(path+'/logout');
+    document.location = path || '/';
   });
   $('form#login').find('input').keypress(function(e) {
     if (e.keyCode == 13) $('form#login').submit();
@@ -41,6 +68,7 @@ $(document).ready(function() {
   });
   $('#addModal1').on('hidden', function() {
     $('#formadd1url').val('')
+    $('#addModal1').find('.alert').remove();
   });
   $('#addModal1').find('form').submit(function() {
     $('#formadd1add').click();
@@ -92,12 +120,23 @@ $(document).ready(function() {
 
   $('#addModal2').on('shown', function() {
     $('#formadd2title').focus()
+    $('#taginput').typeahead({
+      name: 'tags',
+      remote: {
+        url: '/api/v1/tag/count?q=%QUERY',
+        filter: function(data) { return tagFilter($('#taginput').val(), data) }
+      },
+      valueKey: 'key',
+    });
   });
   $('#addModal2').on('hidden', function() {
     $('#formadd2save').button('reset');
     $('#addModal2tags').empty();
-    $('#myCarousel > ol').empty();
-    $('#myCarousel > .carousel-inner').empty();
+    $('#myCarousel').remove();
+    //$('body').append(fuck);
+    //$('#myCarousel > ol').empty();
+    //$('#myCarousel').carousel(0);
+    //$('#myCarousel > .carousel-inner').empty();
     $('#formadd2imgurl').removeClass('uneditable-input');
     $('#formadd2taginput').val('');
     $('formadd2noimg').removeAttr('checked');
@@ -110,7 +149,7 @@ $(document).ready(function() {
   $('#formadd2imgurl').keypress(function(e) {
     if (e.keyCode != 13) return;
     $('#myCarousel > .carousel-inner').append('<div class=item><img></div>');
-    var i = $('#myCarousel > .carousel-inner').children(':last');
+    var i = $('#myCarousel > .carousel-inner').children(':last').find('img');
     $(i).attr('src', $('#formadd2imgurl').val());
     $('#formadd2imgurl').val('')
     $('#myCarousel').carousel($('#myCarousel > .carousel-inner').children().length - 1);
@@ -135,10 +174,17 @@ if ($('#formadd2title').val() == '') return;
     if ($('#formadd2taginput').val() !== undefined) form.tags.push($('#formadd2taginput').val());
     if (!$('#formadd2noimg').is(':checked')) {
       form.image = $('#myCarousel').find('.active > img').attr('src');
+      if (!form.image) form.image = $('#myCarousel').find('.next > img').attr('src'); // there is no active yet if the user doesnt interact with the carousel
     }
     postJSON($('#formadd2').attr('action'), form, function(data) {
       $('#addModal2').modal('hide');
       addLink(data.link);
+    }).fail(function(res) {
+      //var msg = 'Unknown error: '+res.statusText;
+      //if (res.status == 409) msg = 'That bookmark already exists';
+      //$('#addModal2').modal('hide');
+      //$('body').append('<div id=errorModal class="modal hide fade" role="dialog"><div class=modal-header><button class="close" type="button", data-dismiss="modal"><h3>Error</h3></div><div class=modal-body><div class="alert alert-error"></div></div><div class=modal-footer><button class=btn data-dismiss=modal id=errorclose>Cancel</div></div>');
+      //$('#errorModal').modal('show');
     });
   });
 });
@@ -151,47 +197,50 @@ function addLink(data) {
   if ($('body').attr('auth') !== undefined && $('body').attr('auth') == $('body').attr('user')) {
     if ($('body').attr('tag') !== undefined) {
       if (data.tags.indexOf($('body').attr('tag')) >= 0) {
-        fuck(n, data);
+        updateLink(n, data);
       }
       return;
     }
-    fuck(n, data);
+    updateLink(n, data);
     return
   }
   // popup
 }
 
-function fuck(div, data) {
-  $(div).attr('id', data._id);
-  $(div).find('[class="main"]').attr('href', data.url).text(data.title);
+function updateLink(div, data) {
+  var t = $(div).find('div[class="title"]');
+  $((t.length > 0) ? t : $(div).find('[class="main"]')).attr('href', data.url).text(data.title);
   $(div).find('[class="domain"]').text(data.url_parsed.domain);
-  $(div).find('[class="savedate"]').text(data.saved);
+  $(div).find('[class="savedate"]').text(data.saved || 'just now');
   $(div).find('[class="description"]').text(data.description);
-  $(div).find('img').attr('src', (data._attachments && data._attachments.image) ? '/api/v1/image/get?id='+data._id : '/img/noimage.jpg');
+  $(div).find('img').attr('src', (data._attachments && data._attachments.image) ? path+'/api/v1/image/get?id='+data._id : path+'/img/noimage.jpg');
   var t = $(div).find('[class="tags"]');
   $(t).empty();
   for (x in data.tags) {
     $(t).append('<span class="badge tag"><a href="/user/'+data.user+'/'+data.tags[x]+'"><i class=icon-tags></i>'+data.tags[x]+'</a></span>');
   }
+  $(div).attr('id', data._id);
 }
 
 // edit dialog
 $(document).ready(function() {
-  $('.link .edit').click(function(e) {
+  $('body').on('click', '.link .edit', function(e) {
     var id = $(e.target).parents('.link').attr('id');
     $('#formeditid').val(id);
-    $.get('/api/v1/link/get', { id: id }, function(data) {
+    $.get(path+'/api/v1/link/get', { id: id }, function(data) {
       $('#formedittitle').val(data.link.title);
       for (t in data.link.tags) {
         addtag('#editModaltags', data.link.tags[t]);
       }
       if (data.link._attachments && data.link._attachments.image) {
-        $('#formeditimage').attr('src', '/api/v1/image/get?id='+id);
+        var imgurl = '/api/v1/image/get?id='+id;
       } else {
-        $('#formeditimage').attr('src', '/img/noimage.jpg');
+        var imgurl = '/img/noimage.jpg';
         $('#formeditnoimg').prop('disabled', true);
       }
+      $('#formeditimage').attr('src', imgurl).attr('orig', imgurl);
       $('#formediturl').val(data.link.url);
+      $('#formeditorigurl').val(data.link.url);
       $('#formeditdescription').val(data.link.description);
       if (data.link.private) $('#formeditprivate').prop('checked', true);
       $('#editModal').modal('show');
@@ -207,12 +256,15 @@ $(document).ready(function() {
     if ($('#formeditnoimg').is(':checked')) {
       $('#formeditimgurl').val('').addClass('uneditable-input');
       $('#formeditimage').data('original_image', $('#formeditimage').attr('src'));
-      $('#formeditimage').attr('src', '/img/noimage.jpg');
+      $('#formeditimage').attr('src', path+'/img/noimage.jpg');
     } else {
       $('#formeditimgurl').removeClass('uneditable-input');
       $('#formeditimage').attr('src', $('#formeditimage').data('original_image'));
     }
   });
+  //$('#formeditprivate').on('change', function(e) {
+  //  $(e.currentTarget).next('i').attr('class', ($(e.currentTarget).is(':checked')) ? 'icon-lock' : 'icon-unlock');
+  //});
   $('#formeditsave').click(function(e) {
     $('#formeditsave').button('loading');
     var form = form2obj('#editModal');
@@ -221,12 +273,24 @@ $(document).ready(function() {
       form.tags.push($(this).text());
     });
     if ($('#formedittaginput').val() != '') form.tags.push($('#formedittaginput').val());
-    if (!$('#formeditnoimg').is(':checked') && $('#formeditimage').attr('src') != '/img/noimage.jpg') {
+    if (!$('#formeditnoimg').is(':checked') && $('#formeditimage').attr('src') != path+'/img/noimage.jpg') {
       form.image = $('#formeditimage').attr('src');
     }
+    if (form.origurl == form.url) delete(form.url);
+    delete(form.origurl);
     postJSON($('#formedit').attr('action'), form, function(data) {
-      fuck($('#'+data.link._id), data.link);
+      updateLink($('#'+data.link._id), data.link);
       $('#editModal').modal('hide');
+    });
+  });
+  $('#editModal').on('shown', function() {
+    $('#formedittaginput').typeahead({
+      name: 'tags',
+      remote: {
+        url: '/api/v1/tag/count?q=%QUERY',
+        filter: function(data) { return tagFilter($('#formedittaginput').val(), data) }
+      },
+      valueKey: 'key',
     });
   });
   $('#editModal').on('hidden', function() {
@@ -235,6 +299,7 @@ $(document).ready(function() {
     $('#formeditprivate').prop('checked', false);
     $('#formeditnoimg').prop('checked', false);
     $('#formeditimgurl').removeClass('uneditable-input');
+    $('#formeditimgurl').val('');
     $('#formedittaginput').val('');
   });
   $('#formeditdelete').click(function(e) {
@@ -263,8 +328,18 @@ function postJSON(url, obj, callback) {
 }
 
 $(document).ready(function() {
+/*
+  $('input[name="q"]').typeahead({
+    name: 'search',
+    remote: {
+      url: '/searchautocomplete?q=%QUERY',
+      filter: function(data) { return tagFilter($('input[name="q"]').val(), data) }
+    },
+    valueKey: 'key',
+  });
+*/
   $('.settings-view i').click(function(e) {
-    postJSON('/api/v1/account/edit', { settings: { view:  $(e.currentTarget).attr('name') } }, function(data) {
+    postJSON(path+'/api/v1/account/edit', { settings: { view:  $(e.currentTarget).attr('name') } }, function(data) {
       location.reload();
     });
   });
@@ -273,5 +348,12 @@ $(document).ready(function() {
 //  }).on('mouseleave', 'div.img-polaroid', function() {
 //    $(this).siblings('.title').show('slideDown');
 //  });
+  $('#searchmenu a').click(function(e) {
+    //postJSON('/api/v1/account/edit', { settings: { search: $(e.currentTarget).attr('name') } }, function(data) {
+    //});
+    var t = $(e.currentTarget).text();
+    $('#searchbutton').html(t+' <span class=caret></span>');
+    $('#searchsetting').val($(e.currentTarget).attr('value'));
+  })
 });
 
