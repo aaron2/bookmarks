@@ -1,13 +1,17 @@
+- if (typeof(images) == 'undefined') images = []
 div(id='addModal2', class='modal hide fade', tabindex='-1', role='dialog', aria-labelledby='addModal2Label', aria-hidden='true', data-backdrop='static')
   div.modal-header
     button.close(type='button', data-dismiss="modal", aria-hidden="true")
     h3.addModal2Label Add Bookmark
   div.modal-body
-    form(method='post', action='/api/v1/link/edit', delete='/api/v1/link/delete/', id='formadd2')
+    form(method='post', action='/bookmarks/api/v1/link/edit', delete='/bookmarks/api/v1/link/delete/', id='formadd2')
       .row-fluid
         .span5
-          div(id='myCarousel', class='carousel slide', data-interval='false')
+          .carousel.slide(id='myCarousel')
             .carousel-inner
+              for i in images
+                .item
+                  img(src=i)
             a(class='carousel-control left', href='#myCarousel', data-slide='prev') &lsaquo;
             a(class='carousel-control right', href='#myCarousel', data-slide='next') &rsaquo;
           input(type='text', id='formadd2imgurl', placeholder='add image... http://')

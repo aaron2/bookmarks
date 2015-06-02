@@ -5,14 +5,15 @@ block content
   - each link in links
     .link.view-full(id=link.id)
       .thumb
-        a(href=link.value.url)
-          if link.value._attachments && link.value._attachments.image
-            img(src='/api/v1/image/get?id='+link.id)
-          else
-            img(src='/img/noimage.jpg')
+        if link.value._attachments && link.value._attachments.image
+          a(data-toggle='tooltip', data-title='<img src="/api/v1/image/get?id='+link.id+'">', data-placement='right', data-html=true)
+            img(src='/bookmarks/api/v1/image/get?id='+link.id)
+        else
+          a(href=link.value.url)
+            img(src='/bookmarks/img/noimage.jpg')
 
       h4
-        a(class='main', href=(link.value.type == 'image') ? '/api/v1/image/get?id='+link.id : link.value.url)
+        a(class='main', href=(link.value.type == 'image') ? '/bookmarks/api/v1/image/get?id='+link.id : link.value.url)
           != link.value.title
       if (authenticated)
         i(class='icon-pencil edit')
@@ -21,15 +22,19 @@ block content
       span.saveddate(alt=new Date(link.value.saved*1000).toString())
         != func.duration(now-link.value.saved)
       if (link.value.private)
-        i(class='icon-lock')
+        i.icon-lock
+      if (link.value.status[0] != 'ok')
+        a(href='http://192.168.1.101:5984/_utils/document.html?bookmarks/'+link.id)
+          i.icon-unlink
       if (link.value.tags)
         span.tags
           - each tag in link.value.tags
             span.badge.tag
-              a(href='/user/'+user+'/'+tag)
+              a(href='/bookmarks/user/'+user+'/'+tag)
                 i.icon-tags
                 != tag
       .description #{link.value.description}
+      .readmore
 
 block left-bar
   include view

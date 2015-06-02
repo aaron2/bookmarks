@@ -3,16 +3,18 @@ div(id='editModal', class='modal hide fade', tabindex='-1', role='dialog', aria-
     button.close(type='button', data-dismiss="modal", aria-hidden="true")
     h3.editModalLabel Edit Bookmark
   div.modal-body
-    form(method='post', action='/api/v1/link/edit', id='formedit')
+    form(method='post', action='/bookmarks/api/v1/link/edit', id='formedit')
       .row-fluid
         .span5
-          img(id='formeditimage', class='img-polaroid')
+          #editthumb
+            img(id='formeditimage')
           input(type='text', id='formeditimgurl', placeholder='change image... http://')
           .control-group
             #label.control-label(for='formeditnoimg') Remove image
             input(type='checkbox', id='formeditnoimg')
         .span7
           input(type='hidden', name='id', id='formeditid', value='')
+          input(type='hidden', name='origurl', id='formeditorigurl', value='')
           .control-group
             label.control-label(for='title') Title
             .controls
@@ -35,6 +37,6 @@ div(id='editModal', class='modal hide fade', tabindex='-1', role='dialog', aria-
                #editModaltags
                input(type='text', id='formedittaginput', class='tagsinput input-xlarge', placeholder='add tags', tags-container='editModaltags')
   div.modal-footer
-    a(id='formeditdelete', href='/api/v1/link/delete') Delete
+    a(id='formeditdelete', href='/bookmarks/api/v1/link/delete') Delete
     button.btn(data-dismiss='modal', aria-hidden='true', id='formeditcancel') Cancel
     button(class='btn btn-primary', id='formeditsave') Save

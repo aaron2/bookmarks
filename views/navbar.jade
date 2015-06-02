@@ -1,14 +1,29 @@
 - if (typeof(search) == 'undefined') search = ''
+//-- settings.search = settings.search || 'user_full'
+//-- var sname = { user_full: 'Search your bookmarks', 'user': 'user', all: 'all', all_full: 'all_full' }
 div(class='navbar navbar-fixed-top')
   .navbar-inner
     span.brand Delish
-    form(class='navbar-search pull-left', method='get', action='/search')
+    //-    form(class='navbar-search pull-left', method='get', action='/search')
+    //-      //input(type='text', class='search-query', name='q', placeholder='Search', value=search.query)
+    //-      input(type='hidden', value=settings.search, id='searchsettings')
+    //-      input(type='text', name='q', id='searchinput', placeholder='Search', value=search.query)
+    //-      .input-append
+    //-        .btn-group
+    //-          - var s = sname[settings.search] || sname['user_full']
+    //-          button.btn.dropdown-toggle(id='searchbutton', data-toggle='dropdown') #{s}
+    //-            span.caret
+    //-          ul.dropdown-menu(id='searchmenu')
+    //-            - for x in sname
+    //-              li
+    //-                a(href='#', value=x) #{sname[x]}
+    form(class='navbar-search pull-left', method='get', action='/bookmarks/search')
       input(type='text', class='search-query', name='q', placeholder='Search', value=search.query)
     ul.nav
       li.dropdown
         if typeof(authenticated) != 'undefined' && authenticated
           a(class='dropdown-toggle', data-toggle='dropdown')
-            | Search your bookmarks 
+            | Search your bookmarks
             span.caret
           ul.dropdown-menu
             li Search all bookmarks
@@ -21,20 +36,20 @@ div(class='navbar navbar-fixed-top')
           ul.dropdown-menu
             li Search excluding full text
   
-      if typeof(authenticated) != 'undefined' && authenticated
-        a(href='#addModal1', role='button', class='btn btn-primary', data-toggle='modal')
-          i.icon-plus
-          |    Add Link
+    if typeof(authenticated) != 'undefined' && authenticated
+      a(href='#addModal1', role='button', class='btn btn-primary', data-toggle='modal')
+        i.icon-plus
+        |    Add Link
 
     ul(class='nav pull-right')
       if typeof(authenticated) != 'undefined' && authenticated
         li(class='dropdown dropdown-split-left pull-right')
-          a(href='/user/'+authenticated) #{authenticated} 
+          a(href='/bookmarks/user/'+authenticated) #{authenticated} 
         li(class='dropdown dropdown-split-right')
           a(href='#', class='dropdown-toggle', data-toggle='dropdown')
             span.caret
           ul.dropdown-menu
-            li: a(href='/account') Edit your account
+            li: a(href='/bookmarks/account') Edit your account
             li: a(href='#', id='logout') Logout
       else
         li(class='dropdown pull-right')
@@ -42,7 +57,7 @@ div(class='navbar navbar-fixed-top')
             b.caret
           ul.dropdown-menu(role='menu')
             li
-              form(id='login', action='/login', method='post')
+              form(id='login', action='/bookmarks/login', method='post')
                 fieldset
                   label Username
                   input(type='text', name='username')
