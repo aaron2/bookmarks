@@ -236,7 +236,6 @@ body.bookmarklet {
 
 .settings-view {
   color: #aaa;
-  margin-top: 5px;
   border-bottom: 2px solid #eee;
   padding: 6px;
   width: 100%;
@@ -246,6 +245,15 @@ body.bookmarklet {
   background: #eee;
   border: 1px solid #aaa;
   border-radius: 3px;
+}
+
+.left-col {
+  margin-top: 10px;
+  padding-left: 0px;
+}
+
+.content {
+  margin-top: 13px;
 }
 
 div.img-polaroid {
