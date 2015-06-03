@@ -31,7 +31,7 @@ function Link(user, url, data) {
 
 exports.add = function(req, res) {
   if (!req.body.url) {
-    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
   var now = parseInt(new Date().getTime() / 1000);
@@ -45,12 +45,12 @@ exports.add = function(req, res) {
   global.db.bookmarks.get(link._id, function(err, doc) {
     if (doc) {
       console.log('id:', link._id);
-      res.sendStatus(409, { status: 'error', error: 'conflict' });
+      res.status(409).send({ status: 'error', error: 'conflict' });
       return;
     }
     if (!req.body.parse) {
       if (!req.body.title) {
-        res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+        res.status(400).send({ status: 'error', error: 'missing required parameter' });
         return;
       }
       link.title = req.body.title;
@@ -59,7 +59,7 @@ exports.add = function(req, res) {
       fetchImage(req.body.image, link, function(doc) {
         global.db.bookmarks.save(doc._id, doc, function(err, save) {
           console.log('err1', err);
-          res.sendStatus(201, { status: 'ok', link: stub(link) });
+          res.status(201).send({ status: 'ok', link: stub(link) });
         });
       });
     } else {
@@ -67,7 +67,7 @@ exports.add = function(req, res) {
       parser.parse(link.url, function(err, parsed) {
         if (err) {
           console.log('parse error: '+err);
-          res.sendStatus(400, { status: 'error', error: err });
+          res.status(400).send({ status: 'error', error: err });
           return;
         }
         link.title = (req.body.title) ? req.body.title : parsed.title;
@@ -78,7 +78,7 @@ exports.add = function(req, res) {
         fetchImage(req.body.image, link, function(doc) {
           global.db.bookmarks.save(link._id, link, function(err, save) {
             if (err) console.log(err);
-            res.sendStatus(201, { status: 'ok', link: stub(link), images: parsed.images });
+            res.status(201).send({ status: 'ok', link: stub(link), images: parsed.images });
           });
         });
       });
@@ -88,7 +88,7 @@ exports.add = function(req, res) {
 
 exports.replace = function(req, res) {
   if (!req.body.id || !req.body.link || !req.body.link.url) {
-    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
   if (!global.auth.owned(req.body.id, req.session.user)) {
@@ -107,12 +107,12 @@ exports.replace = function(req, res) {
     if (id != req.body.id) {
       global.db.bookmarks.save(id, req.body.link, function(err, save) {
         global.db.bookmarks.remove(req.body.id, doc._rev, function(err, del) {
-          res.sendStatus(200, { status: 'ok', link: stub(req.body.link) });
+          res.status(200).send({ status: 'ok', link: stub(req.body.link) });
         });
       });
     } else {
       global.db.bookmarks.save(id, doc._rev, req.body.link, function(err, save) {
-        res.sendStatus(200, { status: 'ok', link: stub(req.body.link) });
+        res.status(200).send({ status: 'ok', link: stub(req.body.link) });
       });
     }
   });
@@ -120,7 +120,7 @@ exports.replace = function(req, res) {
 
 exports.edit = function(req, res) {
   if (!req.body.id) {
-    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
   if (!global.auth.owned(req.body.id, req.session.user)) {
@@ -149,9 +149,9 @@ exports.edit = function(req, res) {
       var newdoc = new Link(req.session.user, req.body.url, doc);
       fetchImage(req.body.image, newdoc, function(newdoc) {
         global.db.bookmarks.save(newdoc._id, newdoc, function(err, save) {
-          if (err) { res.send(500); return; }
+          if (err) { res.sendStatus(500); return; }
           global.db.bookmarks.remove(req.body.id, doc._rev, function(err, del) {
-            res.send(200, { status: 'ok', link: stub(newdoc) });
+            res.status(200).send({ status: 'ok', link: stub(newdoc) });
           });
         });
       });
@@ -162,7 +162,7 @@ if (res.headersSent) {
 console.log('asshole');
 return;
 }
-          res.sendStatus(200, { status: 'ok', link: stub(doc) });
+          res.status(200).send({ status: 'ok', link: stub(doc) });
         });
       });
     }
@@ -231,7 +231,7 @@ not needed with requests module?
 
 exports.delete = function(req, res){
   if (!req.body.id) {
-    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
   if (!global.auth.owned(req.body.id, req.session.user)) {
@@ -246,9 +246,9 @@ exports.delete = function(req, res){
     }
     global.db.bookmarks.remove(doc._id, doc._rev, function(err, del) {
       if (err) {
-        rese.sendStatus(200, { status: 'error', error: err });
+        rese.status(200).send({ status: 'error', error: err });
       } else {
-        res.sendStatus(200, { status: 'ok', link: { _id: doc._id } });
+        res.status(200).send({ status: 'ok', link: { _id: doc._id } });
       }
     });
   });
@@ -262,7 +262,7 @@ exports.get = function(req, res) {
     global.db.bookmarks.get(req.query.id, getOpts, function(err, doc) {
       if (global.auth.owned(req.query.id, req.session.user)) {
         if (doc) {
-          res.sendStatus(200, { status: 'ok', link: doc });
+          res.status(200).send({ status: 'ok', link: doc });
         } else {
           res.sendStatus(404);
         }
@@ -272,7 +272,7 @@ exports.get = function(req, res) {
         res.sendStatus(403);
         return;
       }
-      res.sendStatus(200, { status: 'ok', link: doc });
+      res.status(200).send({ status: 'ok', link: doc });
     });
   }
   else if (req.query.user) {
@@ -280,11 +280,11 @@ exports.get = function(req, res) {
     getOpts.startkey = [ req.query.user ];
     getOpts.endkey = [ req.query.user, {} ];
     global.db.bookmarks.view(view, getOpts, function(err, docs) {
-      res.sendStatus(200, { status: 'ok', data: docs });
+      res.status(200).send({ status: 'ok', data: docs });
     });
   }
   else {
-    res.sendStatus(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
   }
 }
 

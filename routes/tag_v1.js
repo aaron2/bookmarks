@@ -1,6 +1,6 @@
 exports.tag = function(req, res) {
   if (!req.body.tag) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
 

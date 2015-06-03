@@ -5,7 +5,7 @@ exports.get = function(req, res) {
   }
   global.db.bookmarks.get(req.query.id, {attachments: false}, function(err, doc) {
     if (!doc || !doc._attachments || !doc._attachments.image) {
-      //res.writeHead(302, { 'Location': '/img/noimage.jpg' });
+      //res.writeHead(302, { 'Location': '/bookmarks/img/noimage.jpg' });
       //res.end();
       res.sendStatus(404);
       return;
@@ -38,16 +38,16 @@ exports.get = function(req, res) {
 
 exports.info = function(req, res) {
   if (!req.query.id) {
-    res.send(400, { status: 'error', error: 'missing required parameter' });
+    res.status(400).send({ status: 'error', error: 'missing required parameter' });
     return;
   }
   global.db.bookmarks.get(req.query.id, function(err, doc) {
     if (!doc || !doc._attachments || !doc._attachments.image) {
-      res.send(404);
+      res.sendStatus(404);
       return;
     }
     if (doc.private == true && (!req.session.user || req.session.user != doc.user)) {
-      res.send(403);
+      res.sendStatus(403);
       return;
     }
     delete(doc._attachments.image.stub);

@@ -11,7 +11,7 @@ exports.add = function(req, res){
 
 exports.get = function(req, res){
   global.db.users.get(req.session.user, function(err, doc) {
-    res.send(200, clean(doc));
+    res.status(200).send(clean(doc));
   })
 }
 
@@ -33,10 +33,10 @@ exports.edit = function(req, res) {
   req.session.save(function(err) {
     global.auth.deny(req, res, function() {
       updateUser(req, function(doc) {
-        res.send(200, clean(doc));
+        res.status(200).send(clean(doc));
       });
     }, function() {
-      res.send(200, { settings: req.session.settings });
+      res.status(200).send({ settings: req.session.settings });
     });
   });
 }
@@ -54,7 +54,7 @@ function updateUser(req, callback) {
         doc.password_hash = hash;
         global.db.users.save(req.session.user, doc._rev, doc, function(err, r) {
           if (err !== null) {
-            res.send(500);
+            res.sendStatus(500);
             return;
           }
           callback(doc);
@@ -63,7 +63,7 @@ function updateUser(req, callback) {
     } else {
       global.db.users.save(req.session.user, doc._rev, doc, function(err, r) {
         if (err !== null) {
-          res.send(500);
+          res.sendStatus(500);
           return;
         }
         callback(doc);

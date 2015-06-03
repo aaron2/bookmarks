@@ -89,9 +89,9 @@ exports.search = function(req, res) {
 exports.apiSearch = function(req, res) {
   search(req, function(results, err) {
     if (err) {
-      res.send(500, { status: 'error', error: err });
+      res.status(500).send({ status: 'error', error: err });
     }
-    res.send(200, results);
+    res.status(200).send(results);
   });
 }
 
