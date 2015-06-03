@@ -1,9 +1,10 @@
 - if (typeof(search) == 'undefined') search = ''
 //-- settings.search = settings.search || 'user_full'
 //-- var sname = { user_full: 'Search your bookmarks', 'user': 'user', all: 'all', all_full: 'all_full' }
-div(class='navbar navbar-fixed-top')
-  .navbar-inner
-    span.brand Delish
+nav(class='navbar navbar-default navbar-fixed-top')
+  .container-fluid
+    .navbar-header
+      a.navbar-brand Delish
     //-    form(class='navbar-search pull-left', method='get', action='/search')
     //-      //input(type='text', class='search-query', name='q', placeholder='Search', value=search.query)
     //-      input(type='hidden', value=settings.search, id='searchsettings')
@@ -17,9 +18,9 @@ div(class='navbar navbar-fixed-top')
     //-            - for x in sname
     //-              li
     //-                a(href='#', value=x) #{sname[x]}
-    form(class='navbar-search pull-left', method='get', action='/bookmarks/search')
-      input(type='text', class='search-query', name='q', placeholder='Search', value=search.query)
-    ul.nav
+    form(class='navbar-form navbar-left', role='search', method='get', action='/bookmarks/search')
+      input(type='text', class='form-control', name='q', placeholder='Search', value=search.query)
+    ul.nav.navbar-nav
       li.dropdown
         if typeof(authenticated) != 'undefined' && authenticated
           a(class='dropdown-toggle', data-toggle='dropdown')
@@ -37,13 +38,13 @@ div(class='navbar navbar-fixed-top')
             li Search excluding full text
   
     if typeof(authenticated) != 'undefined' && authenticated
-      a(href='#addModal1', role='button', class='btn btn-primary', data-toggle='modal')
+      button(type='button', href='#addModal1', role='button', class='btn btn-primary navbar-btn', data-toggle='modal')
         i.icon-plus
         |    Add Link
 
-    ul(class='nav pull-right')
+    ul.nav.navbar-nav.navbar-right
       if typeof(authenticated) != 'undefined' && authenticated
-        li(class='dropdown dropdown-split-left pull-right')
+        li(class='dropdown dropdown-split-left')
           a(href='/bookmarks/user/'+authenticated) #{authenticated} 
         li(class='dropdown dropdown-split-right')
           a(href='#', class='dropdown-toggle', data-toggle='dropdown')

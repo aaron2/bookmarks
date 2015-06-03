@@ -2,18 +2,19 @@ extends layout
 
 block content
   - var now = new Date().getTime()/1000;
-  .span3
-    - for (var i=0; i <links.length; i+=4)
-      +link(links[i])
-  .span3
-    - for (var i=1; i <links.length; i+=4)
-      +link(links[i])
-  .span3
-    - for (var i=2; i <links.length; i+=4)
-      +link(links[i])
-  .span3
-    - for (var i=3; i <links.length; i+=4)
-      +link(links[i])
+  .container-fluid
+    .col-md-3
+      - for (var i=0; i <links.length; i+=4)
+        +link(links[i])
+    .col-md-3
+      - for (var i=1; i <links.length; i+=4)
+        +link(links[i])
+    .col-md-3
+      - for (var i=2; i <links.length; i+=4)
+        +link(links[i])
+    .col-md-3
+      - for (var i=3; i <links.length; i+=4)
+        +link(links[i])
 
 mixin link(link)
   .link.view-thumbnail(id=link.id)

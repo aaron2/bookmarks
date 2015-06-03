@@ -31,11 +31,12 @@ html
     include scripts
   body(tag=tag, user=user, view=layout, auth=authenticated)
     include navbar
-    .row-fluid
-      .span2
-        block left-bar
-      .span10
-        block content
+    .container-fluid
+      .row
+        .col-md-2.left-col
+          block left-bar
+        .col-md-10.content
+          block content
     include addModal1
     include addModal2
     include editModal
