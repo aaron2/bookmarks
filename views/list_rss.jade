@@ -1,0 +1,14 @@
+rss(version='2.0')  
+  channel
+    title #{title}
+    | <link>/#{user}/#{tag}</link>
+    description #{title}
+  - each link in links.slice(0,25)
+    item
+      | <link>#{link.value.url}</link>
+      guid #{link.id}
+      description #{link.value.description}
+      title #{link.value.title}
+      pubDate #{link.value.saved}
+      if link.value._attachments && link.value._attachments.image
+        | <enclosure url="/api/v1/image/get?id=#{link.id}" length=#{link.value._attachments.image.length} type="#{link.value._attachments.image.content_type}" />
