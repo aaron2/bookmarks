@@ -233,9 +233,9 @@ $(document).ready(function() {
         addtag('#editModaltags', data.link.tags[t]);
       }
       if (data.link._attachments && data.link._attachments.image) {
-        var imgurl = '/api/v1/image/get?id='+id;
+        var imgurl = path+'/api/v1/image/get?id='+id;
       } else {
-        var imgurl = '/img/noimage.jpg';
+        var imgurl = path+'/img/noimage.jpg';
         $('#formeditnoimg').prop('disabled', true);
       }
       $('#formeditimage').attr('src', imgurl).attr('orig', imgurl);
@@ -275,8 +275,10 @@ $(document).ready(function() {
     if ($('#formedittaginput').val() != '') form.tags.push($('#formedittaginput').val());
     if (!$('#formeditnoimg').is(':checked') && $('#formeditimage').attr('src') != path+'/img/noimage.jpg') {
       form.image = $('#formeditimage').attr('src');
+      form.origimage = $('#formeditimage').attr('orig');
     }
     if (form.origurl == form.url) delete(form.url);
+    if (form.origimage == form.image) delete(form.image);
     delete(form.origurl);
     postJSON($('#formedit').attr('action'), form, function(data) {
       updateLink($('#'+data.link._id), data.link);
@@ -287,7 +289,7 @@ $(document).ready(function() {
     $('#formedittaginput').typeahead({
       name: 'tags',
       remote: {
-        url: '/api/v1/tag/count?q=%QUERY',
+        url: path+'/api/v1/tag/count?q=%QUERY',
         filter: function(data) { return tagFilter($('#formedittaginput').val(), data) }
       },
       valueKey: 'key',
