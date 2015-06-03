@@ -28,11 +28,10 @@ exports.get = function(req, res) {
       'Content-Type': doc._attachments.image.content_type,
       //'Transfer-Encoding': 'none',
       'ETag': doc._rev,
-      //'Content-Length': doc._attachments.image.length,
+      'Content-Length': doc._attachments.image.length,
       'Connection': 'close',
     });
     image.pipe(res);
-    res.end()
   });
 }
 
