@@ -12,13 +12,17 @@ var urlParams;
 })();
 
 $(document).ready(function() {
-console.log(window.parent);
-  $('#formadd2title').val(urlParams.title);
+  $('#formadd2').attr('action', '/bookmarks/api/v1/link/add').attr('delete', '');
+  $('#formadd2').append('<input type=hidden name=parse value=true>');
+  $('#formadd2id').remove();
+  $('#formadd2').append('<input type=hidden name=url value='+urlParams.url+'>');
+  $('#formadd2title').val((urlParams.title) ? urlParams.title : urlParams.url);
   $('#formadd2url').val(urlParams.url);
   $('#formadd2description').val(urlParams.description);
   $('#addModal2').modal();
   $('#addModal2').on('hidden', function() { window.parent.postMessage("destroy_bookmarklet","*") });
-
+  $('#myCarousel').carousel({ interval: 0 });
+  $('#myCarousel').carousel('next');
 
   $('#loginModal').modal();
   $('#loginModal').on('hidden', function() { window.parent.postMessage("destroy_bookmarklet","*") });

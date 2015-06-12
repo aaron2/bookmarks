@@ -3,7 +3,6 @@ javascript:(function (win,t){
   var doc = win.document;
   setTimeout(function() {
     function remove(e) {
-alert(e);
       if (e.data === 'destroy_bookmarklet') {
         var id = doc.getElementById(name);
         if (id) {
@@ -17,13 +16,18 @@ alert(e);
     var id = doc.getElementById(name);
     if (id) {return;}
 
-
     var iframe = doc.createElement('iframe');
     iframe.id = name;
-    iframe.src = 'http://192.168.1.101:8124/save?'
+    var src = 'http://crack.lighter.net/bookmarks/save?'
       +'url='+encodeURIComponent(win.location.href)
       +'&title='+encodeURIComponent(doc.title)
       +'&description='+encodeURIComponent(''+(win.getSelection ? win.getSelection() : doc.getSelection ? doc.getSelection() : doc.selection.createRange().text));
+    for (var x in doc.images) {
+      if (doc.images[x].attributes !== undefined && doc.images[x].attributes.src !== undefined) {
+        src += '&img='+encodeURIComponent(doc.images[x].attributes.src.value);
+      }
+    }
+    iframe.src = src;
     iframe.style.position   = 'fixed';
     iframe.style.top        = '0';
     iframe.style.left       = '0';
@@ -32,7 +36,6 @@ alert(e);
     iframe.style.zIndex     = '16777270';
     iframe.style.border     = 'none';
     iframe.style.visibility = 'hidden';
-    iframe.style.opacity    = '0.5';
 
     iframe.onload = function() {
       this.style.visibility='visible';
