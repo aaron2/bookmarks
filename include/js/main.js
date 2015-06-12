@@ -123,7 +123,7 @@ $(document).ready(function() {
     $('#taginput').typeahead({
       name: 'tags',
       remote: {
-        url: '/api/v1/tag/count?q=%QUERY',
+        url: path+'/api/v1/tag/count?q=%QUERY',
         filter: function(data) { return tagFilter($('#taginput').val(), data) }
       },
       valueKey: 'key',
