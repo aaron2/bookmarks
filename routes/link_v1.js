@@ -190,6 +190,7 @@ function attach(doc, name, contentType, encoding, data) {
 function fetchImage(url, doc, callback) {
   if (!url) return callback(doc);
 
+  if (url.substr(0,2) == '//') { url = 'http:'+url; }
   var request = require('request');
   var req = request.get(url);
   req.on('error', function(e) {
