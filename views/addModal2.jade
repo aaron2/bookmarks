@@ -4,6 +4,7 @@ div(id='addModal2', class='modal hide fade', tabindex='-1', role='dialog', aria-
     button.close(type='button', data-dismiss="modal", aria-hidden="true")
     h3.addModal2Label Add Bookmark
   div.modal-body
+    div(class='alert alert-error')
     form(method='post', action='/bookmarks/api/v1/link/edit', delete='/bookmarks/api/v1/link/delete/', id='formadd2')
       .row-fluid
         .span5
