@@ -51,7 +51,6 @@ margin: 10px 0 0 0;
 .view-thumbnail .title {
   position: absolute;
   top: 10px;
-  left: 30px;
   max-width: 200px;
   background: black;
   padding: 5px;
@@ -62,8 +61,6 @@ margin-left: auto;
 margin-right: auto;
 }
 .view-thumbnail div.img-polaroid {
-margin-left: auto;
-margin-right: auto;
 }
 .view-full .description {
   max-height: 50px;
@@ -150,10 +147,10 @@ border-radius: 4px;
   padding: 6px;
 }
 .view-thumbnail .edit {
-  float: right;
-  position: relative;
-  bottom: 30px;
-  left: -35px;
+  float: left;
+  position: absolute;
+  bottom: 10px;
+  left: 195px;
   padding: 6px;
   color: #aaa;
 }
@@ -272,12 +269,40 @@ div.taglist {
   left: 120px;
   right: 0px;
   height: 25px;
-  background-image: -webkit-linear-gradient(top, transparent, white);
+  background-image: -webkit-linear-gradient(top, rgba(255,255,255,0), white);
   background-image: -moz-linear-gradient(top, transparent, white);
   background-image: -ms-linear-gradient(top, transparent, white);
   background-image: -o-linear-gradient(top, transparent, white);
 }
 
+#addModal1 .alert, .bookmarklet .alert {
+  display: none;
+}
 #addModal2 .modal-body {
   overflow-y: visible;
+}
+#addModal1 .alert, .bookmarklet .alert {
+  text-align: left;
+}
+.pagination-container {
+  margin-left: 10px;
+  margin-right: 10px;
+  text-align: center;
+}
+.pagination {
+  display: inline-block;
+}
+.pagecount {
+  color: #999;
+  margin-top: -20px;
+  font-weight: bold;
+}
+a [class^="icon-"]:hover {
+text-decoration: none;
+}
+.view-thumbnail i.icon-lock {
+  position: absolute;
+  float: left;
+  bottom: 15px;
+  left: 17px;
 }

@@ -1,0 +1,49 @@
+-  var cur_page = Math.floor(start/perpage)+1;
+-  var total_pages = Math.ceil(results/perpage);
+-  var num_display_links = 10;
+-  var page_links = [];
+
+-  if (total_pages <= num_display_links) {
+-    start = 1
+-    end = total_pages
+-  } else if (cur_page < num_display_links) {
+-    start = 1
+-    end = start + num_display_links - 1
+-  } else if (cur_page > total_pages - num_display_links) {
+-    start = total_pages - num_display_links + 1
+-    end = total_pages
+-  } else {
+-    start = cur_page - Math.floor(num_display_links / 2) + 1
+-    end = start + num_display_links - 1
+-  }
+-  for (p = start; p <= end; p++) {
+-    page_links.push(p)
+-  }
+
+
+if total_pages > 1
+  .pagination-container
+    .pagination
+      ul
+        if cur_page > 1
+          li
+            a(href=func.self_link(pathinfo, { query: { start: 0 }})) First
+          li
+            a(href=func.self_link(pathinfo, { query: { start: (cur_page-2)*perpage }})) Prev
+        - for p in page_links
+          if p == cur_page
+            li.active
+              a(href=func.self_link(pathinfo, { query: { start: (p-1)*perpage }}))= p
+          else
+            li
+              a(href=func.self_link(pathinfo, { query: { start: (p-1)*perpage }}))= p
+        if cur_page < total_pages
+          li
+            a(href=func.self_link(pathinfo, { query: { start: cur_page*perpage }})) Next
+          li
+            a(href=func.self_link(pathinfo, { query: { start: (total_pages-1)*perpage }})) Last
+    if total_pages > num_display_links
+      .pagecount
+        =total_pages
+        |   pages total
+

@@ -27,6 +27,7 @@ exports.list = function(req, res){
   } else {
     layout = (req.session.settings && req.session.settings.view) || 'compact';
   }
+  //if (!(layout in ['full','compact','thumbnail'])) { layout = 'compact'; }
   global.db.bookmarks.view(view, viewOpts, function (err, rows) {
 
     tagCount = {}
@@ -45,8 +46,28 @@ exports.list = function(req, res){
     tags = tags.sort(function(a, b) {return b[1] - a[1]});
     //if (req.params.tag && tags[0] && tags[0][0] == req.params.tag) tags = tags.slice(1);
 
+    if (req.query.perpage) {
+      var perpage = parseInt(req.query.perpage);
+    } else if (req.session.settings && req.session.settings.perpage) {
+      var perpage = req.session.settings.perpage;
+    } else {
+      var perpage = 24;
+    }
+    var start = (req.query.start) ? parseInt(req.query.start) : 0;
+    var results = rows.length;
+    if (results-(start+perpage) < perpage*.25 && results-(start+perpage) > 0) {
+      var perpage = results-start;
+      var rows = rows.slice(start);
+    } else {
+      var rows = rows.slice(start,start+perpage);
+    }
+
     res.render('list_'+layout+'.jade', {
       title: 'Bookmarks for '+req.params.user,
+      pathinfo: { query: req.query, path: req._parsedUrl.pathname },
+      perpage: perpage,
+      start: start,
+      results: results,
       links: rows,
       tags: tags.slice(0, 30),
       user: req.params.user,
