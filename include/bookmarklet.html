@@ -18,14 +18,17 @@ javascript:(function (win,t){
 
     var iframe = doc.createElement('iframe');
     iframe.id = name;
-    var src = 'http://crack.lighter.net/bookmarks/save?'
+    var src = '//crack.lighter.net/bookmarks/save?'
       +'url='+encodeURIComponent(win.location.href)
       +'&title='+encodeURIComponent(doc.title)
       +'&description='+encodeURIComponent(''+(win.getSelection ? win.getSelection() : doc.getSelection ? doc.getSelection() : doc.selection.createRange().text));
-    for (var x in doc.images) {
-      if (doc.images[x].attributes !== undefined && doc.images[x].attributes.src !== undefined) {
-        src += '&img='+encodeURIComponent(doc.images[x].attributes.src.value);
+    var found = 0;
+    for (var i in doc.images) {
+      if (doc.images[i].attributes !== undefined && doc.images[i].attributes.src !== undefined && !doc.images[i].src.startsWith('data:')) {
+        found++;
+        src += '&img='+encodeURIComponent(doc.images[i].attributes.src.value);
       }
+      if (found >= 10) { break; }
     }
     iframe.src = src;
     iframe.style.position   = 'fixed';
