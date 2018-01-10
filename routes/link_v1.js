@@ -129,7 +129,7 @@ exports.edit = function(req, res) {
   }
 
   getOpts = {}
-  if (req.body.url) getOpts.attachments = true;
+  //if (req.body.url) getOpts.attachments = true;
 
   global.db.bookmarks.get(req.body.id, getOpts, function(err, doc) {
     if (!doc) {
@@ -141,8 +141,15 @@ exports.edit = function(req, res) {
         doc[a[i]] = req.body[a[i]];
       }
     }
+    doc.tags = doc.tags.filter(function(value, index, self) { return self.indexOf(value) === index; } );
     var now = parseInt(new Date().getTime() / 1000);
     doc.modified = now;
+/*
+    if ('image' in req.body && req.body.image === '') {
+      global.db.bookmarks.removeAttachment(req.body.id, 'image', function(err, remove) {
+      });
+    }
+*/
     if (req.body.url && req.body.url != doc.url) {
       doc.status = [ 'ok', now ];
       if (!doc.originalUrl) doc.originalUrl = doc.url;
@@ -158,10 +165,6 @@ exports.edit = function(req, res) {
     } else {
       fetchImage(req.body.image, doc, function(doc) {
         global.db.bookmarks.save(req.body.id, doc._rev, doc, function(err, save) {
-if (res.headersSent) {
-console.log('asshole');
-return;
-}
           res.status(200).send({ status: 'ok', link: stub(doc) });
         });
       });
@@ -192,7 +195,17 @@ function fetchImage(url, doc, callback) {
 
   if (url.substr(0,2) == '//') { url = 'http:'+url; }
   var request = require('request');
-  var req = request.get(url);
+  try {
+    var req = request.get({
+      url: url,
+      rejectUnauthorized: false,
+    });
+  }
+  catch(err) {
+    console.log('fetchimage request err', err);
+    callback(doc);
+    return;
+  }
   req.on('error', function(e) {
     console.log('problem with request: ' + e.message);
     return callback(doc)
@@ -218,7 +231,12 @@ not needed with requests module?
     });
     res.on('end', function (chunk) {
       clearTimeout(timer);
-      callback(attach(doc, 'image',  res.headers['content-type'], 'binary', data));
+      if (data.length == 0) {
+          callback(doc);
+      } else {
+          callback(attach(doc, 'image',  res.headers['content-type'], 'binary', data));
+      }
+      return;
     });
   });
   try {
