@@ -40,6 +40,7 @@ exports.search = function(req, res) {
   var m = [];
   search(req, function(results, err) {
     if (err) {
+      console.log('search error:', err);
       if (err == 'timeout') {
         res.sendStatus(502);
       } else {
@@ -127,6 +128,8 @@ function search(req, callback) {
   searchReq.on('response', function(searchRes) {
     if (searchRes.statusCode != 200) {
       console.log(searchRes);
+      // if the query contains unescaped special chars this might error. not sure if i should try escaping for the user
+      // https://lucene.apache.org/core/2_9_4/queryparsersyntax.html#Escaping Special Characters
       callback({}, 'invalid response from server');
       return;
     }
